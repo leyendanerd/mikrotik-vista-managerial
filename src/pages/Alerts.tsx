@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert as AlertTriangle, AlertCircle, Info, Check, X } from 'lucide-react';
+import { AlertTriangle, AlertCircle, Info, Check, X } from 'lucide-react';
 import { Alert } from '@/types/mikrotik';
 import DeviceSelector from '@/components/DeviceSelector/DeviceSelector';
 import { MikroTikDevice } from '@/types/mikrotik';
