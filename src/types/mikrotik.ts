@@ -1,4 +1,3 @@
-
 export interface MikroTikDevice {
   id: string;
   name: string;
@@ -87,4 +86,40 @@ export interface EmailConfig {
   fromEmail: string;
   toEmails: string[];
   useSSL: boolean;
+}
+
+export interface PPPoEProfile {
+  id: string;
+  name: string;
+  localAddress: string;
+  remoteAddress: string;
+  rateLimitRx: string; // e.g., "1M/2M"
+  rateLimitTx: string;
+  sessionTimeout: number; // in seconds
+  idleTimeout: number; // in seconds
+  onlyOne: boolean;
+  changePasswordTo: string;
+  useCompression: boolean;
+  useEncryption: boolean;
+  bridgeEnabled: boolean;
+  bridgePath: string;
+}
+
+export interface PPPoEUser {
+  id: string;
+  name: string;
+  password: string;
+  profile: string;
+  service: string;
+  callerIdPattern: string;
+  disabled: boolean;
+  comment: string;
+  lastLoggedIn?: Date;
+  uptime?: string;
+  bytesIn: number;
+  bytesOut: number;
+  packetsIn: number;
+  packetsOut: number;
+  isActive: boolean;
+  ipAddress?: string;
 }

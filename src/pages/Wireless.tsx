@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { WirelessInterface } from '@/types/mikrotik';
 import { Wifi, WifiOff, Signal, Users, Settings } from 'lucide-react';
+import DeviceSelector from '@/components/DeviceSelector/DeviceSelector';
+import { MikroTikDevice } from '@/types/mikrotik';
 
 const Wireless = () => {
+  const [selectedDevice, setSelectedDevice] = useState('1');
   const [wirelessInterfaces, setWirelessInterfaces] = useState<WirelessInterface[]>([
     {
       id: '1',
@@ -55,6 +57,38 @@ const Wireless = () => {
     },
   ]);
 
+  // Datos simulados de dispositivos
+  const [devices] = useState<MikroTikDevice[]>([
+    {
+      id: '1',
+      name: 'Router Principal',
+      ip: '192.168.1.1',
+      port: 8728,
+      username: 'admin',
+      password: '',
+      useHttps: true,
+      status: 'online',
+      lastSeen: new Date(),
+      version: '7.10.1',
+      board: 'RB4011iGS+',
+      uptime: '15d 3h 42m'
+    },
+    {
+      id: '2',
+      name: 'Access Point WiFi',
+      ip: '192.168.1.2',
+      port: 8728,
+      username: 'admin',
+      password: '',
+      useHttps: false,
+      status: 'online',
+      lastSeen: new Date(),
+      version: '7.9.2',
+      board: 'cAP ac',
+      uptime: '8d 12h 15m'
+    }
+  ]);
+
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -90,14 +124,26 @@ const Wireless = () => {
     );
   };
 
+  const selectedDeviceName = devices.find(d => d.id === selectedDevice)?.name || 'Dispositivo desconocido';
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Gestión Wireless</h1>
-        <Button>
-          <Settings className="w-4 h-4 mr-2" />
-          Configurar WiFi
-        </Button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión Wireless</h1>
+          <p className="text-gray-600">{selectedDeviceName}</p>
+        </div>
+        <div className="flex space-x-4">
+          <DeviceSelector
+            devices={devices}
+            selectedDevice={selectedDevice}
+            onDeviceChange={setSelectedDevice}
+          />
+          <Button>
+            <Settings className="w-4 h-4 mr-2" />
+            Configurar WiFi
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

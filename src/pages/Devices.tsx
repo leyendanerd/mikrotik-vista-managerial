@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Settings, Monitor } from 'lucide-react';
 import { MikroTikDevice } from '@/types/mikrotik';
 import { useToast } from '@/hooks/use-toast';
+import PPPoEUsers from '@/components/PPPoE/PPPoEUsers';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const Devices = () => {
   const [devices, setDevices] = useState<MikroTikDevice[]>([
@@ -210,56 +211,78 @@ const Devices = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {devices.map((device) => (
-          <Card key={device.id} className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full ${getStatusColor(device.status)}`}></div>
-                  <CardTitle className="text-lg">{device.name}</CardTitle>
-                </div>
-                <Monitor className="w-5 h-5 text-gray-500" />
-              </div>
-              <CardDescription>{device.ip}:{device.port}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-gray-500">Modelo</p>
-                  <p className="font-medium">{device.board}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Versión</p>
-                  <p className="font-medium">{device.version}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Uptime</p>
-                  <p className="font-medium">{device.uptime}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Protocolo</p>
-                  <p className="font-medium">{device.useHttps ? 'HTTPS' : 'HTTP'}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Badge variant={device.status === 'online' ? 'default' : 'secondary'}>
-                  {device.status === 'online' ? 'En línea' : 'Fuera de línea'}
-                </Badge>
-                <div className="flex space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => testConnection(device)}>
-                    Probar
-                  </Button>
-                  <Button size="sm" variant="outline">
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Tabs defaultValue="devices" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="devices">Dispositivos</TabsTrigger>
+          <TabsTrigger value="pppoe">Usuarios PPPoE</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="devices" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {devices.map((device) => (
+              <Card key={device.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-3 h-3 rounded-full ${getStatusColor(device.status)}`}></div>
+                      <CardTitle className="text-lg">{device.name}</CardTitle>
+                    </div>
+                    <Monitor className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <CardDescription>{device.ip}:{device.port}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Modelo</p>
+                      <p className="font-medium">{device.board}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Versión</p>
+                      <p className="font-medium">{device.version}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Uptime</p>
+                      <p className="font-medium">{device.uptime}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Protocolo</p>
+                      <p className="font-medium">{device.useHttps ? 'HTTPS' : 'HTTP'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Badge variant={device.status === 'online' ? 'default' : 'secondary'}>
+                      {device.status === 'online' ? 'En línea' : 'Fuera de línea'}
+                    </Badge>
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="outline" onClick={() => testConnection(device)}>
+                        Probar
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="pppoe" className="space-y-6">
+          {devices.length > 0 ? (
+            <PPPoEUsers 
+              deviceId={devices[0].id} 
+              deviceName={devices[0].name}
+            />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Agrega un dispositivo para gestionar usuarios PPPoE</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

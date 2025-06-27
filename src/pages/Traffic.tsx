@@ -1,15 +1,48 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { NetworkInterface } from '@/types/mikrotik';
+import DeviceSelector from '@/components/DeviceSelector/DeviceSelector';
+import { MikroTikDevice } from '@/types/mikrotik';
 
 const Traffic = () => {
   const [selectedDevice, setSelectedDevice] = useState('1');
   const [selectedInterface, setSelectedInterface] = useState('all');
   const [interfaces, setInterfaces] = useState<NetworkInterface[]>([]);
   const [trafficData, setTrafficData] = useState<any[]>([]);
+
+  // Datos simulados de dispositivos
+  const [devices] = useState<MikroTikDevice[]>([
+    {
+      id: '1',
+      name: 'Router Principal',
+      ip: '192.168.1.1',
+      port: 8728,
+      username: 'admin',
+      password: '',
+      useHttps: true,
+      status: 'online',
+      lastSeen: new Date(),
+      version: '7.10.1',
+      board: 'RB4011iGS+',
+      uptime: '15d 3h 42m'
+    },
+    {
+      id: '2',
+      name: 'Access Point WiFi',
+      ip: '192.168.1.2',
+      port: 8728,
+      username: 'admin',
+      password: '',
+      useHttps: false,
+      status: 'online',
+      lastSeen: new Date(),
+      version: '7.9.2',
+      board: 'cAP ac',
+      uptime: '8d 12h 15m'
+    }
+  ]);
 
   useEffect(() => {
     // Datos de ejemplo
@@ -82,24 +115,21 @@ const Traffic = () => {
     }
   };
 
+  const selectedDeviceName = devices.find(d => d.id === selectedDevice)?.name || 'Dispositivo desconocido';
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Tráfico de Red</h1>
-          <p className="text-gray-600">Monitoreo de interfaces y ancho de banda</p>
+          <p className="text-gray-600">Monitoreo de interfaces y ancho de banda - {selectedDeviceName}</p>
         </div>
         <div className="flex space-x-4">
-          <Select value={selectedDevice} onValueChange={setSelectedDevice}>
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Seleccionar dispositivo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">Router Principal</SelectItem>
-              <SelectItem value="2">Access Point WiFi</SelectItem>
-              <SelectItem value="3">Router Sucursal</SelectItem>
-            </SelectContent>
-          </Select>
+          <DeviceSelector
+            devices={devices}
+            selectedDevice={selectedDevice}
+            onDeviceChange={setSelectedDevice}
+          />
           <Select value={selectedInterface} onValueChange={setSelectedInterface}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="Seleccionar interfaz" />
