@@ -10,6 +10,11 @@ import { LoginPage } from "./components/Login/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import Devices from "./pages/Devices";
 import Traffic from "./pages/Traffic";
+import Wireless from "./pages/Wireless";
+import Alerts from "./pages/Alerts";
+import Backups from "./pages/Backups";
+import Users from "./pages/Users";
+import Config from "./pages/Config";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,11 +57,11 @@ const App = () => {
               <Route path="/devices" element={<Devices />} />
               <Route path="/traffic" element={<Traffic />} />
               <Route path="/vpn" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Gestión de VPN</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
-              <Route path="/wireless" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Gestión Wireless</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
-              <Route path="/alerts" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Gestión de Alertas</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
-              <Route path="/backups" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Gestión de Backups</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
-              <Route path="/users" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Gestión de Usuarios</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
-              <Route path="/config" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Configuración</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
+              <Route path="/wireless" element={<Wireless />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/backups" element={<Backups />} />
+              <Route path="/users" element={<Users />} />
+              <Route path="/config" element={<Config />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </DashboardLayout>

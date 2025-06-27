@@ -1,0 +1,60 @@
+
+version: '3.8'
+
+services:
+  # Base de datos MariaDB
+  mariadb:
+    image: mariadb:10.11
+    container_name: mikrotik-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: mikrotik_dashboard
+      MYSQL_USER: mikrotik_user
+      MYSQL_PASSWORD: mikrotik_pass123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mikrotik-network
+
+  # Aplicación web
+  mikrotik-dashboard:
+    build: .
+    container_name: mikrotik-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - mariadb
+    networks:
+      - mikrotik-network
+    environment:
+      - NODE_ENV=production
+
+  # phpMyAdmin para administrar la base de datos
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: mikrotik-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      PMA_USER: mikrotik_user
+      PMA_PASSWORD: mikrotik_pass123
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+    networks:
+      - mikrotik-network
+
+volumes:
+  mariadb_data:
+    driver: local
+
+networks:
+  mikrotik-network:
+    driver: bridge
