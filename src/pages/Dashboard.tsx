@@ -2,8 +2,8 @@
 import React from 'react';
 import { MainDashboard } from '@/components/Dashboard/MainDashboard';
 
-const Index = () => {
+const Dashboard = () => {
   return <MainDashboard />;
 };
 
-export default Index;
+export default Dashboard;
