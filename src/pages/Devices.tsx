@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,29 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Settings, Monitor } from 'lucide-react';
+import { Plus, Settings, Monitor, Edit, Trash2 } from 'lucide-react';
 import { MikroTikDevice } from '@/types/mikrotik';
 import { useToast } from '@/hooks/use-toast';
-import PPPoEUsers from '@/components/PPPoE/PPPoEUsers';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const Devices = () => {
-  const [devices, setDevices] = useState<MikroTikDevice[]>([
-    {
-      id: '1',
-      name: 'Router Principal',
-      ip: '192.168.1.1',
-      port: 8728,
-      username: 'admin',
-      password: '',
-      useHttps: true,
-      status: 'online',
-      lastSeen: new Date(),
-      version: '7.10.1',
-      board: 'RB4011iGS+',
-      uptime: '15d 3h 42m'
-    }
-  ]);
+  const [devices, setDevices] = useState<MikroTikDevice[]>([]);
 
   const [newDevice, setNewDevice] = useState<Partial<MikroTikDevice>>({
     name: '',
@@ -39,7 +23,9 @@ const Devices = () => {
     useHttps: false
   });
 
+  const [editingDevice, setEditingDevice] = useState<MikroTikDevice | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleAddDevice = () => {
@@ -81,6 +67,43 @@ const Devices = () => {
     toast({
       title: "Dispositivo agregado",
       description: `${device.name} ha sido agregado exitosamente`,
+    });
+  };
+
+  const handleEditDevice = (device: MikroTikDevice) => {
+    setEditingDevice(device);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateDevice = () => {
+    if (!editingDevice || !editingDevice.name || !editingDevice.ip || !editingDevice.username || !editingDevice.password) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos requeridos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setDevices(devices.map(device => 
+      device.id === editingDevice.id ? editingDevice : device
+    ));
+    
+    setEditingDevice(null);
+    setIsEditDialogOpen(false);
+
+    toast({
+      title: "Dispositivo actualizado",
+      description: `${editingDevice.name} actualizado exitosamente`,
+    });
+  };
+
+  const deleteDevice = (deviceId: string) => {
+    const device = devices.find(d => d.id === deviceId);
+    setDevices(devices.filter(device => device.id !== deviceId));
+    toast({
+      title: "Dispositivo eliminado",
+      description: `${device?.name} eliminado exitosamente`,
     });
   };
 
@@ -211,78 +234,153 @@ const Devices = () => {
         </Dialog>
       </div>
 
-      <Tabs defaultValue="devices" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="devices">Dispositivos</TabsTrigger>
-          <TabsTrigger value="pppoe">Usuarios PPPoE</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="devices" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {devices.map((device) => (
-              <Card key={device.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${getStatusColor(device.status)}`}></div>
-                      <CardTitle className="text-lg">{device.name}</CardTitle>
-                    </div>
-                    <Monitor className="w-5 h-5 text-gray-500" />
-                  </div>
-                  <CardDescription>{device.ip}:{device.port}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Modelo</p>
-                      <p className="font-medium">{device.board}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Versión</p>
-                      <p className="font-medium">{device.version}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Uptime</p>
-                      <p className="font-medium">{device.uptime}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-500">Protocolo</p>
-                      <p className="font-medium">{device.useHttps ? 'HTTPS' : 'HTTP'}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Badge variant={device.status === 'online' ? 'default' : 'secondary'}>
-                      {device.status === 'online' ? 'En línea' : 'Fuera de línea'}
-                    </Badge>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline" onClick={() => testConnection(device)}>
-                        Probar
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="pppoe" className="space-y-6">
-          {devices.length > 0 ? (
-            <PPPoEUsers 
-              deviceId={devices[0].id} 
-              deviceName={devices[0].name}
-            />
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Agrega un dispositivo para gestionar usuarios PPPoE</p>
+      {/* Edit Device Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Dispositivo</DialogTitle>
+            <DialogDescription>
+              Modifica la configuración del dispositivo MikroTik
+            </DialogDescription>
+          </DialogHeader>
+          {editingDevice && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-device-name">Nombre del dispositivo *</Label>
+                <Input
+                  id="edit-device-name"
+                  value={editingDevice.name}
+                  onChange={(e) => setEditingDevice({...editingDevice, name: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-device-ip">Dirección IP *</Label>
+                <Input
+                  id="edit-device-ip"
+                  value={editingDevice.ip}
+                  onChange={(e) => setEditingDevice({...editingDevice, ip: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-device-port">Puerto API</Label>
+                <Input
+                  id="edit-device-port"
+                  type="number"
+                  value={editingDevice.port}
+                  onChange={(e) => setEditingDevice({...editingDevice, port: parseInt(e.target.value)})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-device-username">Usuario *</Label>
+                <Input
+                  id="edit-device-username"
+                  value={editingDevice.username}
+                  onChange={(e) => setEditingDevice({...editingDevice, username: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-device-password">Contraseña *</Label>
+                <Input
+                  id="edit-device-password"
+                  type="password"
+                  value={editingDevice.password}
+                  onChange={(e) => setEditingDevice({...editingDevice, password: e.target.value})}
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="edit-use-https"
+                  checked={editingDevice.useHttps}
+                  onCheckedChange={(checked) => setEditingDevice({...editingDevice, useHttps: checked})}
+                />
+                <Label htmlFor="edit-use-https">Usar HTTPS</Label>
+              </div>
+              <div className="flex space-x-2">
+                <Button onClick={handleUpdateDevice} className="flex-1">
+                  Actualizar Dispositivo
+                </Button>
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  Cancelar
+                </Button>
+              </div>
             </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {devices.length === 0 ? (
+        <div className="text-center py-12">
+          <Monitor className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay dispositivos configurados</h3>
+          <p className="text-gray-500 mb-4">Agrega tu primer dispositivo MikroTik para comenzar</p>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Agregar Primer Dispositivo
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {devices.map((device) => (
+            <Card key={device.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full ${getStatusColor(device.status)}`}></div>
+                    <CardTitle className="text-lg">{device.name}</CardTitle>
+                  </div>
+                  <Monitor className="w-5 h-5 text-gray-500" />
+                </div>
+                <CardDescription>{device.ip}:{device.port}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-gray-500">Modelo</p>
+                    <p className="font-medium">{device.board}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Versión</p>
+                    <p className="font-medium">{device.version}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Uptime</p>
+                    <p className="font-medium">{device.uptime}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Protocolo</p>
+                    <p className="font-medium">{device.useHttps ? 'HTTPS' : 'HTTP'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <Badge variant={device.status === 'online' ? 'default' : 'secondary'}>
+                    {device.status === 'online' ? 'En línea' : 'Fuera de línea'}
+                  </Badge>
+                  <div className="flex space-x-1">
+                    <Button size="sm" variant="outline" onClick={() => testConnection(device)}>
+                      Probar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEditDevice(device)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => deleteDevice(device.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

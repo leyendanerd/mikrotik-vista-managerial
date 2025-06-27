@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,45 +20,8 @@ interface PPPoEUsersProps {
 }
 
 const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
-  const [users, setUsers] = useState<PPPoEUser[]>([
-    {
-      id: '1',
-      name: 'cliente1',
-      password: 'pass123',
-      profile: 'profile-1M',
-      service: 'any',
-      callerIdPattern: '',
-      disabled: false,
-      comment: 'Cliente residencial',
-      lastLoggedIn: new Date(),
-      uptime: '2d 5h 30m',
-      bytesIn: 1024000000,
-      bytesOut: 512000000,
-      packetsIn: 50000,
-      packetsOut: 25000,
-      isActive: true,
-      ipAddress: '10.0.0.10'
-    }
-  ]);
-
-  const [profiles, setProfiles] = useState<PPPoEProfile[]>([
-    {
-      id: '1',
-      name: 'profile-1M',
-      localAddress: '10.0.0.1',
-      remoteAddress: '10.0.0.0/24',
-      rateLimitRx: '1M/2M',
-      rateLimitTx: '1M/2M',
-      sessionTimeout: 0,
-      idleTimeout: 0,
-      onlyOne: true,
-      changePasswordTo: '',
-      useCompression: false,
-      useEncryption: false,
-      bridgeEnabled: false,
-      bridgePath: ''
-    }
-  ]);
+  const [users, setUsers] = useState<PPPoEUser[]>([]);
+  const [profiles, setProfiles] = useState<PPPoEProfile[]>([]);
 
   const [newUser, setNewUser] = useState<Partial<PPPoEUser>>({
     name: '',
@@ -160,6 +124,7 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
       onlyOne: newProfile.onlyOne || true,
       changePasswordTo: newProfile.changePasswordTo || '',
       useCompression: newProfile.useCompression || false,
+      useEncryption: newProfile.useEncryption || false,
       bridgeEnabled: newProfile.bridgeEnabled || false,
       bridgePath: newProfile.bridgePath || ''
     };
@@ -417,65 +382,73 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
 
           <Card>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Contraseña</TableHead>
-                    <TableHead>Perfil</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>IP</TableHead>
-                    <TableHead>Datos</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{user.name}</p>
-                          {user.comment && <p className="text-sm text-gray-500">{user.comment}</p>}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {showPasswords ? user.password : '••••••••'}
-                      </TableCell>
-                      <TableCell>{user.profile}</TableCell>
-                      <TableCell>
-                        <Badge variant={user.isActive ? 'default' : user.disabled ? 'destructive' : 'secondary'}>
-                          {user.isActive ? 'Conectado' : user.disabled ? 'Deshabilitado' : 'Desconectado'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{user.ipAddress || '-'}</TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <div>↓ {formatBytes(user.bytesIn)}</div>
-                          <div>↑ {formatBytes(user.bytesOut)}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-1">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => deleteUser(user.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              {users.length === 0 ? (
+                <div className="p-8 text-center">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No hay usuarios PPPoE configurados</p>
+                  <p className="text-sm text-gray-400 mt-1">Crea un nuevo usuario para comenzar</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Usuario</TableHead>
+                      <TableHead>Contraseña</TableHead>
+                      <TableHead>Perfil</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>IP</TableHead>
+                      <TableHead>Datos</TableHead>
+                      <TableHead>Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{user.name}</p>
+                            {user.comment && <p className="text-sm text-gray-500">{user.comment}</p>}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {showPasswords ? user.password : '••••••••'}
+                        </TableCell>
+                        <TableCell>{user.profile}</TableCell>
+                        <TableCell>
+                          <Badge variant={user.isActive ? 'default' : user.disabled ? 'destructive' : 'secondary'}>
+                            {user.isActive ? 'Conectado' : user.disabled ? 'Deshabilitado' : 'Desconectado'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{user.ipAddress || '-'}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <div>↓ {formatBytes(user.bytesIn)}</div>
+                            <div>↑ {formatBytes(user.bytesOut)}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-1">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditUser(user)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => deleteUser(user.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -567,47 +540,55 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
             </Dialog>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {profiles.map((profile) => (
-              <Card key={profile.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{profile.name}</CardTitle>
-                      <CardDescription>
-                        RX: {profile.rateLimitRx} | TX: {profile.rateLimitTx}
-                      </CardDescription>
+          {profiles.length === 0 ? (
+            <div className="text-center py-12">
+              <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">No hay perfiles PPPoE configurados</p>
+              <p className="text-sm text-gray-400 mt-1">Crea un nuevo perfil para asignar a los usuarios</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {profiles.map((profile) => (
+                <Card key={profile.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{profile.name}</CardTitle>
+                        <CardDescription>
+                          RX: {profile.rateLimitRx} | TX: {profile.rateLimitTx}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => deleteProfile(profile.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => deleteProfile(profile.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Local</p>
-                      <p className="font-mono">{profile.localAddress}</p>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-500">Local</p>
+                        <p className="font-mono">{profile.localAddress}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500">Remoto</p>
+                        <p className="font-mono">{profile.remoteAddress}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-500">Remoto</p>
-                      <p className="font-mono">{profile.remoteAddress}</p>
+                    <div className="flex justify-between text-sm">
+                      <span>Solo una sesión:</span>
+                      <Badge variant={profile.onlyOne ? 'default' : 'secondary'}>
+                        {profile.onlyOne ? 'Sí' : 'No'}
+                      </Badge>
                     </div>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>Solo una sesión:</span>
-                    <Badge variant={profile.onlyOne ? 'default' : 'secondary'}>
-                      {profile.onlyOne ? 'Sí' : 'No'}
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

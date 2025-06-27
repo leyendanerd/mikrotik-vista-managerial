@@ -58,7 +58,6 @@ const App = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/devices" element={<Devices />} />
               <Route path="/traffic" element={<Traffic />} />
-              <Route path="/vpn" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Gestión de VPN</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
               <Route path="/wireless" element={<Wireless />} />
               <Route path="/pppoe" element={<PPPoEUsersPage />} />
               <Route path="/alerts" element={<Alerts />} />
