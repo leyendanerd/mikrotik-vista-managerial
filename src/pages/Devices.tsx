@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,30 @@ import { useToast } from '@/hooks/use-toast';
 
 const Devices = () => {
   const [devices, setDevices] = useState<MikroTikDevice[]>([]);
+
+  useEffect(() => {
+    fetch('/api/devices')
+      .then((r) => r.json())
+      .then((data) =>
+        setDevices(
+          data.map((d: any) => ({
+            id: d.id.toString(),
+            name: d.name,
+            ip: d.ip_address,
+            port: d.port,
+            username: d.username,
+            password: d.password_encrypted,
+            useHttps: !!d.use_https,
+            status: d.status || 'offline',
+            lastSeen: d.last_seen ? new Date(d.last_seen) : new Date(),
+            version: d.version || 'Desconocido',
+            board: d.board || 'Desconocido',
+            uptime: d.uptime || '0d 0h 0m',
+          }))
+        )
+      )
+      .catch((e) => console.error('Failed to load devices', e));
+  }, []);
 
   const [newDevice, setNewDevice] = useState<Partial<MikroTikDevice>>({
     name: '',
@@ -28,7 +52,7 @@ const Devices = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleAddDevice = () => {
+  const handleAddDevice = async () => {
     if (!newDevice.name || !newDevice.ip || !newDevice.username || !newDevice.password) {
       toast({
         title: "Error",
@@ -37,23 +61,35 @@ const Devices = () => {
       });
       return;
     }
-
-    const device: MikroTikDevice = {
-      id: Date.now().toString(),
-      name: newDevice.name!,
-      ip: newDevice.ip!,
-      port: newDevice.port || 8728,
-      username: newDevice.username!,
-      password: newDevice.password!,
-      useHttps: newDevice.useHttps || false,
-      status: 'offline',
-      lastSeen: new Date(),
-      version: 'Desconocido',
-      board: 'Desconocido',
-      uptime: '0d 0h 0m'
-    };
-
-    setDevices([...devices, device]);
+    const res = await fetch('/api/devices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: newDevice.name,
+        ip: newDevice.ip,
+        port: newDevice.port,
+        username: newDevice.username,
+        password: newDevice.password,
+        useHttps: newDevice.useHttps,
+      }),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      setDevices([...devices, {
+        id: saved.id.toString(),
+        name: saved.name,
+        ip: saved.ip_address,
+        port: saved.port,
+        username: saved.username,
+        password: saved.password_encrypted,
+        useHttps: !!saved.use_https,
+        status: saved.status || 'offline',
+        lastSeen: saved.last_seen ? new Date(saved.last_seen) : new Date(),
+        version: saved.version || 'Desconocido',
+        board: saved.board || 'Desconocido',
+        uptime: saved.uptime || '0d 0h 0m',
+      }]);
+    }
     setNewDevice({
       name: '',
       ip: '',
@@ -75,7 +111,7 @@ const Devices = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateDevice = () => {
+  const handleUpdateDevice = async () => {
     if (!editingDevice || !editingDevice.name || !editingDevice.ip || !editingDevice.username || !editingDevice.password) {
       toast({
         title: "Error",
@@ -84,11 +120,38 @@ const Devices = () => {
       });
       return;
     }
+    const res = await fetch(`/api/devices/${editingDevice.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editingDevice.name,
+        ip: editingDevice.ip,
+        port: editingDevice.port,
+        username: editingDevice.username,
+        password: editingDevice.password,
+        useHttps: editingDevice.useHttps,
+      }),
+    });
+    if (res.ok) {
+      const saved = await res.json();
+      setDevices(devices.map(device =>
+        device.id === editingDevice.id ? {
+          id: saved.id.toString(),
+          name: saved.name,
+          ip: saved.ip_address,
+          port: saved.port,
+          username: saved.username,
+          password: saved.password_encrypted,
+          useHttps: !!saved.use_https,
+          status: saved.status || 'offline',
+          lastSeen: saved.last_seen ? new Date(saved.last_seen) : new Date(),
+          version: saved.version || 'Desconocido',
+          board: saved.board || 'Desconocido',
+          uptime: saved.uptime || '0d 0h 0m',
+        } : device
+      ));
+    }
 
-    setDevices(devices.map(device => 
-      device.id === editingDevice.id ? editingDevice : device
-    ));
-    
     setEditingDevice(null);
     setIsEditDialogOpen(false);
 
@@ -98,8 +161,9 @@ const Devices = () => {
     });
   };
 
-  const deleteDevice = (deviceId: string) => {
+  const deleteDevice = async (deviceId: string) => {
     const device = devices.find(d => d.id === deviceId);
+    await fetch(`/api/devices/${deviceId}`, { method: 'DELETE' });
     setDevices(devices.filter(device => device.id !== deviceId));
     toast({
       title: "Dispositivo eliminado",
