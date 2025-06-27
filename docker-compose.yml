@@ -29,10 +29,28 @@ services:
       - "80:80"
     depends_on:
       - mariadb
+      - mikrotik-api
     networks:
       - mikrotik-network
     environment:
       - NODE_ENV=production
+
+  # API backend
+  mikrotik-api:
+    build: ./api
+    container_name: mikrotik-api
+    restart: unless-stopped
+    environment:
+      DB_HOST: mariadb
+      DB_USER: mikrotik_user
+      DB_PASSWORD: mikrotik_pass123
+      DB_NAME: mikrotik_dashboard
+    depends_on:
+      - mariadb
+    ports:
+      - "3000:3000"
+    networks:
+      - mikrotik-network
 
   # phpMyAdmin para administrar la base de datos
   phpmyadmin:
