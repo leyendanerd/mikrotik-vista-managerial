@@ -9,7 +9,9 @@ import {
   File,
   Key,
   Calendar,
-  Book
+  Book,
+  Users,
+  Mail
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,9 +31,11 @@ const menuItems = [
   { title: 'Tráfico de Red', url: '/traffic', icon: Monitor },
   { title: 'VPN', url: '/vpn', icon: Key },
   { title: 'Wireless', url: '/wireless', icon: Monitor },
+  { title: 'Usuarios PPPoE', url: '/pppoe', icon: Users },
   { title: 'Alertas', url: '/alerts', icon: Bell },
   { title: 'Backups', url: '/backups', icon: File },
   { title: 'Usuarios', url: '/users', icon: User },
+  { title: 'Email', url: '/email', icon: Mail },
   { title: 'Configuración', url: '/config', icon: Settings },
 ];
 

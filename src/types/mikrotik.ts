@@ -123,3 +123,24 @@ export interface PPPoEUser {
   isActive: boolean;
   ipAddress?: string;
 }
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  type: 'alert' | 'notification' | 'report';
+  variables: string[];
+  isDefault: boolean;
+}
+
+export interface AlertConfig {
+  id: string;
+  name: string;
+  enabled: boolean;
+  alertTypes: ('critical' | 'warning' | 'info')[];
+  emailTemplate: string;
+  sendEmail: boolean;
+  sendSMS: boolean;
+  devices: string[];
+}

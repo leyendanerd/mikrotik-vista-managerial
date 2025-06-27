@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Users, Settings, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Users, Settings, Trash2, Eye, EyeOff, Edit } from 'lucide-react';
 import { PPPoEUser, PPPoEProfile } from '@/types/mikrotik';
 import { useToast } from '@/hooks/use-toast';
 
@@ -90,6 +89,9 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [showPasswords, setShowPasswords] = useState(false);
 
+  const [editingUser, setEditingUser] = useState<PPPoEUser | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
   const { toast } = useToast();
 
   const handleAddUser = () => {
@@ -158,7 +160,6 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
       onlyOne: newProfile.onlyOne || true,
       changePasswordTo: newProfile.changePasswordTo || '',
       useCompression: newProfile.useCompression || false,
-      useEncryption: newProfile.useEncryption || false,
       bridgeEnabled: newProfile.bridgeEnabled || false,
       bridgePath: newProfile.bridgePath || ''
     };
@@ -184,6 +185,34 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
     toast({
       title: "Perfil PPPoE creado",
       description: `Perfil ${profile.name} agregado exitosamente`,
+    });
+  };
+
+  const handleEditUser = (user: PPPoEUser) => {
+    setEditingUser(user);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateUser = () => {
+    if (!editingUser || !editingUser.name || !editingUser.password || !editingUser.profile) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos requeridos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUsers(users.map(user => 
+      user.id === editingUser.id ? editingUser : user
+    ));
+    
+    setEditingUser(null);
+    setIsEditDialogOpen(false);
+
+    toast({
+      title: "Usuario actualizado",
+      description: `Usuario ${editingUser.name} actualizado exitosamente`,
     });
   };
 
@@ -213,13 +242,6 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Usuarios PPPoE - {deviceName}</h2>
-          <p className="text-gray-600">Gestión de usuarios y perfiles PPPoE</p>
-        </div>
-      </div>
-
       <Tabs defaultValue="users" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="users">Usuarios</TabsTrigger>
@@ -318,6 +340,81 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
             </Dialog>
           </div>
 
+          {/* Edit User Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Editar Usuario PPPoE</DialogTitle>
+                <DialogDescription>
+                  Modifica los datos del usuario para {deviceName}
+                </DialogDescription>
+              </DialogHeader>
+              {editingUser && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-user-name">Nombre de usuario *</Label>
+                    <Input
+                      id="edit-user-name"
+                      value={editingUser.name}
+                      onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-user-password">Contraseña *</Label>
+                    <Input
+                      id="edit-user-password"
+                      type="password"
+                      value={editingUser.password}
+                      onChange={(e) => setEditingUser({...editingUser, password: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-user-profile">Perfil *</Label>
+                    <Select
+                      value={editingUser.profile}
+                      onValueChange={(value) => setEditingUser({...editingUser, profile: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {profiles.map((profile) => (
+                          <SelectItem key={profile.id} value={profile.name}>
+                            {profile.name} ({profile.rateLimitRx})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-user-comment">Comentario</Label>
+                    <Input
+                      id="edit-user-comment"
+                      value={editingUser.comment}
+                      onChange={(e) => setEditingUser({...editingUser, comment: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="edit-user-disabled"
+                      checked={editingUser.disabled}
+                      onCheckedChange={(checked) => setEditingUser({...editingUser, disabled: checked})}
+                    />
+                    <Label htmlFor="edit-user-disabled">Deshabilitado</Label>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={handleUpdateUser} className="flex-1">
+                      Actualizar Usuario
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -358,13 +455,22 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => deleteUser(user.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex space-x-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditUser(user)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => deleteUser(user.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

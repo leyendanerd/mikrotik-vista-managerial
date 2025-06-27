@@ -15,6 +15,8 @@ import Alerts from "./pages/Alerts";
 import Backups from "./pages/Backups";
 import Users from "./pages/Users";
 import Config from "./pages/Config";
+import PPPoEUsersPage from "./pages/PPPoEUsers";
+import Email from "./pages/Email";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,9 +60,11 @@ const App = () => {
               <Route path="/traffic" element={<Traffic />} />
               <Route path="/vpn" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Gestión de VPN</h1><p className="text-gray-600 mt-2">Próximamente...</p></div>} />
               <Route path="/wireless" element={<Wireless />} />
+              <Route path="/pppoe" element={<PPPoEUsersPage />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/backups" element={<Backups />} />
               <Route path="/users" element={<Users />} />
+              <Route path="/email" element={<Email />} />
               <Route path="/config" element={<Config />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
