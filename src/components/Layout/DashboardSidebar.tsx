@@ -11,7 +11,8 @@ import {
   Calendar,
   Book,
   Users,
-  Mail
+  Mail,
+  Terminal
 } from 'lucide-react';
 import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import {
@@ -36,6 +37,7 @@ const menuItems = [
   { title: 'Backups', url: '/backups', icon: File },
   { title: 'Usuarios', url: '/users', icon: User },
   { title: 'Email', url: '/email', icon: Mail },
+  { title: 'Logs', url: '/logs', icon: Terminal },
   { title: 'Configuración', url: '/config', icon: Settings },
 ];
 

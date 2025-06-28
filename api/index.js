@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
 import { RouterOSClient } from 'routeros-client';
+import { EventEmitter } from 'events';
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,6 +22,28 @@ const pool = mysql.createPool({
 
 // Keep RouterOS connections alive
 const connections = new Map();
+
+const emitter = new EventEmitter();
+
+function sendEvent(data) {
+  emitter.emit('event', data);
+}
+
+app.get('/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const listener = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+  emitter.on('event', listener);
+
+  req.on('close', () => {
+    emitter.off('event', listener);
+  });
+});
 
 app.get('/devices', async (req, res) => {
   try {
@@ -83,6 +107,12 @@ app.post('/devices/:id/connect', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM mikrotik_devices WHERE id=?', [id]);
     if (!rows.length) return res.status(404).json({ error: 'Not found' });
     const device = rows[0];
+    sendEvent({
+      type: 'log',
+      message: `Conectando con ${device.name || device.ip_address}`,
+      level: 'info',
+      timestamp: new Date(),
+    });
     let client = connections.get(id);
     if (!client) {
       client = new RouterOSClient({
@@ -106,6 +136,20 @@ app.post('/devices/:id/connect', async (req, res) => {
       'UPDATE mikrotik_devices SET status=?, last_seen=?, version=?, board=? WHERE id=?',
       ['online', lastSeen, version, board, id]
     );
+    sendEvent({
+      type: 'alert',
+      deviceId: id,
+      deviceName: device.name,
+      message: 'Conexión exitosa',
+      level: 'info',
+      timestamp: lastSeen,
+    });
+    sendEvent({
+      type: 'log',
+      message: `Conectado con ${device.name}`,
+      level: 'info',
+      timestamp: lastSeen,
+    });
     res.json({ status: 'online', version, board, lastSeen });
   } catch (err) {
     console.error(err);
@@ -114,6 +158,20 @@ app.post('/devices/:id/connect', async (req, res) => {
       'UPDATE mikrotik_devices SET status=? WHERE id=?',
       ['offline', id]
     );
+    sendEvent({
+      type: 'alert',
+      deviceId: id,
+      deviceName: id,
+      message: 'Error de conexión',
+      level: 'error',
+      timestamp: new Date(),
+    });
+    sendEvent({
+      type: 'log',
+      message: `Error al conectar con ${id}`,
+      level: 'error',
+      timestamp: new Date(),
+    });
     res.status(500).json({ error: 'Connection failed' });
   }
 });

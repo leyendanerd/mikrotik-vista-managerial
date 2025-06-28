@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, AlertCircle, Info, Check, X } from 'lucide-react';
 import { Alert } from '@/types/mikrotik';
+import { useEventStream } from '@/hooks/useEventStream';
 import DeviceSelector from '@/components/DeviceSelector/DeviceSelector';
 import { MikroTikDevice } from '@/types/mikrotik';
 
@@ -14,6 +15,23 @@ const Alerts = () => {
 
   // Lista de dispositivos obtenida desde la API
   const [devices] = useState<MikroTikDevice[]>([]);
+
+  useEventStream((evt) => {
+    if (evt.type === 'alert') {
+      setAlerts((a) => [
+        ...a,
+        {
+          id: evt.id || Math.random().toString(36).slice(2),
+          deviceId: evt.deviceId,
+          deviceName: evt.deviceName,
+          type: evt.level === 'error' ? 'critical' : 'info',
+          message: evt.message,
+          timestamp: evt.timestamp ? new Date(evt.timestamp) : new Date(),
+          acknowledged: false,
+        },
+      ]);
+    }
+  });
 
   const acknowledgeAlert = (alertId: string) => {
     setAlerts(alerts.map(alert =>

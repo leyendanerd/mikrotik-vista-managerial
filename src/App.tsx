@@ -17,6 +17,7 @@ import Users from "./pages/Users";
 import Config from "./pages/Config";
 import PPPoEUsersPage from "./pages/PPPoEUsers";
 import Email from "./pages/Email";
+import Logs from "./pages/Logs";
 import NotFound from "./pages/NotFound";
 import { useGeneralConfig } from "./hooks/useGeneralConfig";
 
@@ -78,6 +79,7 @@ const App = () => {
               <Route path="/backups" element={<Backups />} />
               <Route path="/users" element={<Users />} />
               <Route path="/email" element={<Email />} />
+              <Route path="/logs" element={<Logs />} />
               <Route path="/config" element={<Config />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
