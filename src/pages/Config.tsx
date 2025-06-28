@@ -8,71 +8,87 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Settings, Database, Mail, Shield, Globe } from 'lucide-react';
+import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 
 const Config = () => {
-  const [generalConfig, setGeneralConfig] = useState({
-    appName: 'MikroTik Dashboard',
-    refreshInterval: 30,
-    enableNotifications: true,
-    darkMode: false,
+  const [generalConfig, setGeneralConfig] = useGeneralConfig();
+
+  const [databaseConfig, setDatabaseConfig] = useState(() => {
+    const stored = localStorage.getItem('db-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          host: 'localhost',
+          port: 3306,
+          database: 'mikrotik_dashboard',
+          username: 'admin',
+          password: '',
+          connectionTimeout: 10,
+        };
   });
 
-  const [databaseConfig, setDatabaseConfig] = useState({
-    host: 'localhost',
-    port: 3306,
-    database: 'mikrotik_dashboard',
-    username: 'admin',
-    password: '',
-    connectionTimeout: 10,
+  const [emailConfig, setEmailConfig] = useState(() => {
+    const stored = localStorage.getItem('email-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          smtpServer: 'smtp.gmail.com',
+          smtpPort: 587,
+          username: '',
+          password: '',
+          fromEmail: '',
+          useSSL: true,
+        };
   });
 
-  const [emailConfig, setEmailConfig] = useState({
-    smtpServer: 'smtp.gmail.com',
-    smtpPort: 587,
-    username: '',
-    password: '',
-    fromEmail: '',
-    useSSL: true,
+  const [securityConfig, setSecurityConfig] = useState(() => {
+    const stored = localStorage.getItem('security-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          sessionTimeout: 3600,
+          maxLoginAttempts: 5,
+          requireStrongPasswords: true,
+          enableTwoFactor: false,
+        };
   });
 
-  const [securityConfig, setSecurityConfig] = useState({
-    sessionTimeout: 3600,
-    maxLoginAttempts: 5,
-    requireStrongPasswords: true,
-    enableTwoFactor: false,
-  });
-
-  const [apiConfig, setApiConfig] = useState({
-    defaultHttpPort: 80,
-    defaultHttpsPort: 443,
-    connectionTimeout: 30,
-    retryAttempts: 3,
-    enableSSLVerification: true,
+  const [apiConfig, setApiConfig] = useState(() => {
+    const stored = localStorage.getItem('api-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          defaultHttpPort: 80,
+          defaultHttpsPort: 443,
+          connectionTimeout: 30,
+          retryAttempts: 3,
+          enableSSLVerification: true,
+        };
   });
 
   const saveGeneralConfig = () => {
     console.log('Guardando configuración general:', generalConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('general-config', JSON.stringify(generalConfig));
   };
 
   const saveDatabaseConfig = () => {
     console.log('Guardando configuración de base de datos:', databaseConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('db-config', JSON.stringify(databaseConfig));
   };
 
   const saveEmailConfig = () => {
     console.log('Guardando configuración de email:', emailConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('email-config', JSON.stringify(emailConfig));
   };
 
   const saveSecurityConfig = () => {
     console.log('Guardando configuración de seguridad:', securityConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('security-config', JSON.stringify(securityConfig));
   };
 
   const saveApiConfig = () => {
     console.log('Guardando configuración de API:', apiConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('api-config', JSON.stringify(apiConfig));
   };
 
   const testDatabaseConnection = () => {
@@ -114,6 +130,13 @@ const Config = () => {
                 <Input
                   value={generalConfig.appName}
                   onChange={(e) => setGeneralConfig({ ...generalConfig, appName: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Ícono de Login (nombre de lucide)</Label>
+                <Input
+                  value={generalConfig.loginIcon}
+                  onChange={(e) => setGeneralConfig({ ...generalConfig, loginIcon: e.target.value })}
                 />
               </div>
               <div>
