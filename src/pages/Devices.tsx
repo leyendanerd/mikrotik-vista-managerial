@@ -13,6 +13,80 @@ import { useToast } from '@/hooks/use-toast';
 
 const Devices = () => {
   const [devices, setDevices] = useState<MikroTikDevice[]>([]);
+  const formatUptime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+  useEffect(() => {
+    fetch('/api/devices')
+      .then((r) => r.json())
+      .then((data) =>
+        setDevices(
+          data.map((d: any) => ({
+            id: d.id.toString(),
+            name: d.name,
+            ip: d.ip_address,
+            port: d.port,
+            username: d.username,
+            password: d.password_encrypted,
+            useHttps: !!d.use_https,
+            status: d.status || 'offline',
+            lastSeen: d.last_seen ? new Date(d.last_seen) : null,
+            version: d.version || 'Desconocido',
+            board: d.board || 'Desconocido',
+            uptime: d.last_seen ? formatUptime(Date.now() - new Date(d.last_seen).getTime()) : '0d 0h 0m',
+          }))
+        )
+      )
+      .catch((e) => console.error('Failed to load devices', e));
+  }, []);
+
+  const formatUptime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+
+  useEffect(() => {
+    fetch('/api/devices')
+      .then((r) => r.json())
+      .then((data) =>
+        setDevices(
+          data.map((d: any) => ({
+            id: d.id.toString(),
+            name: d.name,
+            ip: d.ip_address,
+            port: d.port,
+            username: d.username,
+            password: d.password_encrypted,
+            useHttps: !!d.use_https,
+            status: d.status || 'offline',
+            lastSeen: d.last_seen ? new Date(d.last_seen) : null,
+            version: d.version || 'Desconocido',
+            board: d.board || 'Desconocido',
+            uptime: d.last_seen ? formatUptime(Date.now() - new Date(d.last_seen).getTime()) : '0d 0h 0m',
+          }))
+        )
+      )
+      .catch((e) => console.error('Failed to load devices', e));
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDevices(devices => devices.map(d =>
+        d.status === 'online' && d.lastSeen
+          ? { ...d, uptime: formatUptime(Date.now() - d.lastSeen.getTime()) }
+          : d
+      ));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
 
   const formatUptime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -99,6 +173,7 @@ const Devices = () => {
     });
     if (res.ok) {
       const saved = await res.json();
+
       let added = {
         id: saved.id.toString(),
         name: saved.name,
@@ -112,6 +187,7 @@ const Devices = () => {
         version: saved.version || 'Desconocido',
         board: saved.board || 'Desconocido',
         uptime: saved.uptime || '0d 0h 0m',
+
       };
       setDevices([...devices, added]);
       await fetch(`/api/devices/${saved.id}/connect`, { method: 'POST' })
