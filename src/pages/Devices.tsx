@@ -44,6 +44,38 @@ const Devices = () => {
       .catch((e) => console.error('Failed to load devices', e));
   }, []);
 
+  const formatUptime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+
+  useEffect(() => {
+    fetch('/api/devices')
+      .then((r) => r.json())
+      .then((data) =>
+        setDevices(
+          data.map((d: any) => ({
+            id: d.id.toString(),
+            name: d.name,
+            ip: d.ip_address,
+            port: d.port,
+            username: d.username,
+            password: d.password_encrypted,
+            useHttps: !!d.use_https,
+            status: d.status || 'offline',
+            lastSeen: d.last_seen ? new Date(d.last_seen) : null,
+            version: d.version || 'Desconocido',
+            board: d.board || 'Desconocido',
+            uptime: d.last_seen ? formatUptime(Date.now() - new Date(d.last_seen).getTime()) : '0d 0h 0m',
+          }))
+        )
+      )
+      .catch((e) => console.error('Failed to load devices', e));
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setDevices(devices => devices.map(d =>
@@ -54,6 +86,8 @@ const Devices = () => {
     }, 60000);
     return () => clearInterval(interval);
   }, []);
+
+
   const [newDevice, setNewDevice] = useState<Partial<MikroTikDevice>>({
     name: '',
     ip: '',

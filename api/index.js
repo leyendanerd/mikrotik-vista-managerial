@@ -35,11 +35,9 @@ app.post('/devices', async (req, res) => {
   }
   try {
     const [result] = await pool.execute(
-
       `INSERT INTO mikrotik_devices (name, ip_address, port, username, password_encrypted, use_https, status, last_seen, version, board, uptime)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [name, ip, port || 8728, username, password, !!useHttps, status || 'offline', lastSeen || null, version || null, board || null, uptime || null]
-
     );
     const [rows] = await pool.query('SELECT * FROM mikrotik_devices WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
