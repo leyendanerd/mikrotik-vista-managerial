@@ -8,14 +8,10 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Settings, Database, Mail, Shield, Globe } from 'lucide-react';
+import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 
 const Config = () => {
-  const [generalConfig, setGeneralConfig] = useState({
-    appName: 'MikroTik Dashboard',
-    refreshInterval: 30,
-    enableNotifications: true,
-    darkMode: false,
-  });
+  const [generalConfig, setGeneralConfig] = useGeneralConfig();
 
   const [databaseConfig, setDatabaseConfig] = useState({
     host: 'localhost',
@@ -52,7 +48,7 @@ const Config = () => {
 
   const saveGeneralConfig = () => {
     console.log('Guardando configuración general:', generalConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('general-config', JSON.stringify(generalConfig));
   };
 
   const saveDatabaseConfig = () => {
@@ -114,6 +110,13 @@ const Config = () => {
                 <Input
                   value={generalConfig.appName}
                   onChange={(e) => setGeneralConfig({ ...generalConfig, appName: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Ícono de Login (nombre de lucide)</Label>
+                <Input
+                  value={generalConfig.loginIcon}
+                  onChange={(e) => setGeneralConfig({ ...generalConfig, loginIcon: e.target.value })}
                 />
               </div>
               <div>

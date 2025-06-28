@@ -22,17 +22,21 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('auth') === 'true';
+  });
 
   const handleLogin = (username: string, password: string) => {
     // Lógica de autenticación simple
     if (username === 'admin' && password === 'admin') {
       setIsAuthenticated(true);
+      localStorage.setItem('auth', 'true');
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem('auth');
   };
 
   if (!isAuthenticated) {
@@ -53,7 +57,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <DashboardLayout>
+          <DashboardLayout onLogout={handleLogout}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/devices" element={<Devices />} />
