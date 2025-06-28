@@ -28,15 +28,18 @@ app.get('/devices', async (req, res) => {
 });
 
 app.post('/devices', async (req, res) => {
-  const { name, ip, port, username, password, useHttps } = req.body;
+  const { name, ip, port, username, password, useHttps, status, lastSeen, version, board, uptime } = req.body;
+
   if (!name || !ip || !username || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
   try {
     const [result] = await pool.execute(
-      `INSERT INTO mikrotik_devices (name, ip_address, port, username, password_encrypted, use_https)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, ip, port || 8728, username, password, !!useHttps]
+
+      `INSERT INTO mikrotik_devices (name, ip_address, port, username, password_encrypted, use_https, status, last_seen, version, board, uptime)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, ip, port || 8728, username, password, !!useHttps, status || 'offline', lastSeen || null, version || null, board || null, uptime || null]
+
     );
     const [rows] = await pool.query('SELECT * FROM mikrotik_devices WHERE id = ?', [result.insertId]);
     res.status(201).json(rows[0]);
@@ -48,11 +51,12 @@ app.post('/devices', async (req, res) => {
 
 app.put('/devices/:id', async (req, res) => {
   const id = req.params.id;
-  const { name, ip, port, username, password, useHttps } = req.body;
+  const { name, ip, port, username, password, useHttps, status, lastSeen, version, board, uptime } = req.body;
   try {
     await pool.execute(
-      `UPDATE mikrotik_devices SET name=?, ip_address=?, port=?, username=?, password_encrypted=?, use_https=? WHERE id=?`,
-      [name, ip, port, username, password, !!useHttps, id]
+      `UPDATE mikrotik_devices SET name=?, ip_address=?, port=?, username=?, password_encrypted=?, use_https=?, status=?, last_seen=?, version=?, board=?, uptime=? WHERE id=?`,
+      [name, ip, port, username, password, !!useHttps, status, lastSeen, version, board, uptime, id]
+
     );
     const [rows] = await pool.query('SELECT * FROM mikrotik_devices WHERE id = ?', [id]);
     res.json(rows[0]);

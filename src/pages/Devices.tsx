@@ -13,7 +13,13 @@ import { useToast } from '@/hooks/use-toast';
 
 const Devices = () => {
   const [devices, setDevices] = useState<MikroTikDevice[]>([]);
-
+  const formatUptime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
   useEffect(() => {
     fetch('/api/devices')
       .then((r) => r.json())
@@ -28,16 +34,26 @@ const Devices = () => {
             password: d.password_encrypted,
             useHttps: !!d.use_https,
             status: d.status || 'offline',
-            lastSeen: d.last_seen ? new Date(d.last_seen) : new Date(),
+            lastSeen: d.last_seen ? new Date(d.last_seen) : null,
             version: d.version || 'Desconocido',
             board: d.board || 'Desconocido',
-            uptime: d.uptime || '0d 0h 0m',
+            uptime: d.last_seen ? formatUptime(Date.now() - new Date(d.last_seen).getTime()) : '0d 0h 0m',
           }))
         )
       )
       .catch((e) => console.error('Failed to load devices', e));
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDevices(devices => devices.map(d =>
+        d.status === 'online' && d.lastSeen
+          ? { ...d, uptime: formatUptime(Date.now() - d.lastSeen.getTime()) }
+          : d
+      ));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
   const [newDevice, setNewDevice] = useState<Partial<MikroTikDevice>>({
     name: '',
     ip: '',
@@ -71,6 +87,11 @@ const Devices = () => {
         username: newDevice.username,
         password: newDevice.password,
         useHttps: newDevice.useHttps,
+        status: 'offline',
+        lastSeen: null,
+        version: null,
+        board: null,
+        uptime: '0d 0h 0m'
       }),
     });
     if (res.ok) {
@@ -84,7 +105,7 @@ const Devices = () => {
         password: saved.password_encrypted,
         useHttps: !!saved.use_https,
         status: saved.status || 'offline',
-        lastSeen: saved.last_seen ? new Date(saved.last_seen) : new Date(),
+        lastSeen: saved.last_seen ? new Date(saved.last_seen) : null,
         version: saved.version || 'Desconocido',
         board: saved.board || 'Desconocido',
         uptime: saved.uptime || '0d 0h 0m',
@@ -102,7 +123,7 @@ const Devices = () => {
 
     toast({
       title: "Dispositivo agregado",
-      description: `${device.name} ha sido agregado exitosamente`,
+      description: `${newDevice.name} ha sido agregado exitosamente`,
     });
   };
 
@@ -130,6 +151,11 @@ const Devices = () => {
         username: editingDevice.username,
         password: editingDevice.password,
         useHttps: editingDevice.useHttps,
+        status: editingDevice.status,
+        lastSeen: editingDevice.lastSeen ? editingDevice.lastSeen.toISOString() : null,
+        version: editingDevice.version,
+        board: editingDevice.board,
+        uptime: editingDevice.uptime,
       }),
     });
     if (res.ok) {
@@ -144,7 +170,7 @@ const Devices = () => {
           password: saved.password_encrypted,
           useHttps: !!saved.use_https,
           status: saved.status || 'offline',
-          lastSeen: saved.last_seen ? new Date(saved.last_seen) : new Date(),
+          lastSeen: saved.last_seen ? new Date(saved.last_seen) : null,
           version: saved.version || 'Desconocido',
           board: saved.board || 'Desconocido',
           uptime: saved.uptime || '0d 0h 0m',
@@ -178,15 +204,30 @@ const Devices = () => {
     });
 
     // Simulamos una prueba de conexión
-    setTimeout(() => {
+    setTimeout(async () => {
       const success = Math.random() > 0.3;
-      
+
       if (success) {
-        setDevices(devices.map(d => 
-          d.id === device.id 
-            ? { ...d, status: 'online' as const, lastSeen: new Date() }
-            : d
-        ));
+        const lastSeen = new Date();
+        const updated = { ...device, status: 'online' as const, lastSeen };
+        setDevices(devices.map(d => d.id === device.id ? { ...updated, uptime: formatUptime(0) } : d));
+        await fetch(`/api/devices/${device.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: device.name,
+            ip: device.ip,
+            port: device.port,
+            username: device.username,
+            password: device.password,
+            useHttps: device.useHttps,
+            status: 'online',
+            lastSeen: lastSeen.toISOString(),
+            version: device.version,
+            board: device.board,
+            uptime: '0d 0h 0m'
+          })
+        });
         toast({
           title: "Conexión exitosa",
           description: `Conectado con ${device.name}`,
@@ -238,7 +279,7 @@ const Devices = () => {
                   id="device-name"
                   value={newDevice.name || ''}
                   onChange={(e) => setNewDevice({...newDevice, name: e.target.value})}
-                  placeholder="Ej: Router Principal"
+                  placeholder="Ej: Router 1"
                 />
               </div>
               <div className="space-y-2">
