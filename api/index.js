@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
-
 import { RouterOSClient } from 'routeros-client';
 
 const app = express();
@@ -34,7 +33,6 @@ app.get('/devices', async (req, res) => {
 
 app.post('/devices', async (req, res) => {
   const { name, ip, port, username, password, useHttps, status, lastSeen, version, board, uptime } = req.body;
-
   if (!name || !ip || !username || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
