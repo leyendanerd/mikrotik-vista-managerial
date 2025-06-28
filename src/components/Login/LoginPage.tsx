@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import * as Icons from 'lucide-react';
 import { Monitor, Key, Eye, EyeOff } from 'lucide-react';
+import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import { useToast } from '@/hooks/use-toast';
 
 interface LoginPageProps {
@@ -17,6 +19,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const [generalConfig] = useGeneralConfig();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,16 +54,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background text-foreground p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-              <Monitor className="w-8 h-8 text-white" />
+              {React.createElement(Icons[generalConfig.loginIcon as keyof typeof Icons] ?? Monitor, {
+                className: 'w-8 h-8 text-white',
+              })}
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-gray-900">
-            MikroTik Dashboard
+            {generalConfig.appName}
           </CardTitle>
           <CardDescription className="text-gray-600">
             Ingresa tus credenciales para acceder al panel de administración

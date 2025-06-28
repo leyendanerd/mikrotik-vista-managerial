@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,21 +18,35 @@ import Config from "./pages/Config";
 import PPPoEUsersPage from "./pages/PPPoEUsers";
 import Email from "./pages/Email";
 import NotFound from "./pages/NotFound";
+import { useGeneralConfig } from "./hooks/useGeneralConfig";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('auth') === 'true';
+  });
+  const [generalConfig] = useGeneralConfig();
+
+  useEffect(() => {
+    if (generalConfig.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [generalConfig.darkMode]);
 
   const handleLogin = (username: string, password: string) => {
     // Lógica de autenticación simple
     if (username === 'admin' && password === 'admin') {
       setIsAuthenticated(true);
+      localStorage.setItem('auth', 'true');
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    localStorage.removeItem('auth');
   };
 
   if (!isAuthenticated) {
@@ -53,7 +67,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <DashboardLayout>
+          <DashboardLayout onLogout={handleLogout}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/devices" element={<Devices />} />

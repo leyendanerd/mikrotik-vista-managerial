@@ -29,27 +29,29 @@ services:
       - "80:80"
     depends_on:
       - mariadb
+      - mikrotik-api
     networks:
       - mikrotik-network
     environment:
       - NODE_ENV=production
 
-  # phpMyAdmin para administrar la base de datos
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: mikrotik-phpmyadmin
+  # API backend
+  mikrotik-api:
+    build: ./api
+    container_name: mikrotik-api
     restart: unless-stopped
     environment:
-      PMA_HOST: mariadb
-      PMA_PORT: 3306
-      PMA_USER: mikrotik_user
-      PMA_PASSWORD: mikrotik_pass123
-    ports:
-      - "8080:80"
+      DB_HOST: mariadb
+      DB_USER: mikrotik_user
+      DB_PASSWORD: mikrotik_pass123
+      DB_NAME: mikrotik_dashboard
     depends_on:
       - mariadb
+    ports:
+      - "3000:3000"
     networks:
       - mikrotik-network
+
 
 volumes:
   mariadb_data:
