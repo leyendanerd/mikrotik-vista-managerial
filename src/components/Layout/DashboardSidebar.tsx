@@ -1,17 +1,19 @@
 
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  Monitor, 
-  Settings, 
-  Bell, 
-  User, 
+import * as Icons from 'lucide-react';
+import {
+  Monitor,
+  Settings,
+  Bell,
+  User,
   File,
   Calendar,
   Book,
   Users,
   Mail
 } from 'lucide-react';
+import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 import {
   Sidebar,
   SidebarContent,
@@ -39,6 +41,7 @@ const menuItems = [
 
 export const DashboardSidebar: React.FC = () => {
   const { state } = useSidebar();
+  const [generalConfig] = useGeneralConfig();
   const location = useLocation();
   const currentPath = location.pathname;
   
@@ -54,11 +57,13 @@ export const DashboardSidebar: React.FC = () => {
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Monitor className="w-5 h-5 text-white" />
+              {React.createElement(Icons[generalConfig.loginIcon as keyof typeof Icons] ?? Monitor, {
+                className: 'w-5 h-5 text-white',
+              })}
             </div>
             {!isCollapsed && (
               <div>
-                <h2 className="font-bold text-gray-900">MikroTik</h2>
+                <h2 className="font-bold text-gray-900">{generalConfig.appName}</h2>
                 <p className="text-xs text-gray-500">Admin Panel</p>
               </div>
             )}
