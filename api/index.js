@@ -95,6 +95,9 @@ app.post('/devices/:id/connect', async (req, res) => {
       });
       await client.connect();
       connections.set(id, client);
+    } else if (!client.isConnected) {
+      await client.connect();
+
     }
     const data = await client.menu('/system/resource').getOnly();
     const version = data[0]['version'];
@@ -107,6 +110,11 @@ app.post('/devices/:id/connect', async (req, res) => {
     res.json({ status: 'online', version, board, lastSeen });
   } catch (err) {
     console.error(err);
+    connections.delete(id);
+    await pool.execute(
+      'UPDATE mikrotik_devices SET status=? WHERE id=?',
+      ['offline', id]
+    );
     res.status(500).json({ error: 'Connection failed' });
   }
 });

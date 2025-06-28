@@ -16,52 +16,8 @@ const Traffic = () => {
   const [devices] = useState<MikroTikDevice[]>([]);
 
   useEffect(() => {
-    // Datos de ejemplo
-    const mockInterfaces: NetworkInterface[] = [
-      {
-        id: '1',
-        name: 'ether1',
-        type: 'ethernet',
-        status: 'up',
-        rxBytes: 1024000000,
-        txBytes: 512000000,
-        rxRate: 1024000,
-        txRate: 512000,
-        lastUpdate: new Date()
-      },
-      {
-        id: '2',
-        name: 'wlan1',
-        type: 'wireless',
-        status: 'up',
-        rxBytes: 256000000,
-        txBytes: 128000000,
-        rxRate: 256000,
-        txRate: 128000,
-        lastUpdate: new Date()
-      },
-      {
-        id: '3',
-        name: 'pptp-out1',
-        type: 'vpn',
-        status: 'up',
-        rxBytes: 64000000,
-        txBytes: 32000000,
-        rxRate: 64000,
-        txRate: 32000,
-        lastUpdate: new Date()
-      }
-    ];
-
-    // Datos de tráfico simulados
-    const mockTrafficData = Array.from({ length: 24 }, (_, i) => ({
-      time: `${i.toString().padStart(2, '0')}:00`,
-      rx: Math.floor(Math.random() * 1000) + 100,
-      tx: Math.floor(Math.random() * 800) + 50,
-    }));
-
-    setInterfaces(mockInterfaces);
-    setTrafficData(mockTrafficData);
+    setInterfaces([]);
+    setTrafficData([]);
   }, [selectedDevice]);
 
   const formatBytes = (bytes: number) => {
@@ -141,7 +97,10 @@ const Traffic = () => {
 
       {/* Lista de interfaces */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {interfaces.map((iface) => (
+        {interfaces.length === 0 ? (
+          <p className="text-sm text-gray-500 col-span-3">No hay interfaces disponibles</p>
+        ) : (
+        interfaces.map((iface) => (
           <Card key={iface.id} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -201,6 +160,7 @@ const Traffic = () => {
             </CardContent>
           </Card>
         ))}
+        )}
       </div>
     </div>
   );

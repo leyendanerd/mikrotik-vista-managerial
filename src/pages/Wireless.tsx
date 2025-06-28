@@ -9,53 +9,8 @@ import DeviceSelector from '@/components/DeviceSelector/DeviceSelector';
 import { MikroTikDevice } from '@/types/mikrotik';
 
 const Wireless = () => {
-  const [selectedDevice, setSelectedDevice] = useState('1');
-  const [wirelessInterfaces, setWirelessInterfaces] = useState<WirelessInterface[]>([
-    {
-      id: '1',
-      name: 'wlan1',
-      ssid: 'MiEmpresa-WiFi',
-      frequency: '2.4GHz',
-      signal: -45,
-      clients: 12,
-      rxBytes: 1234567890,
-      txBytes: 987654321,
-      status: 'up',
-    },
-    {
-      id: '2',
-      name: 'wlan2',
-      ssid: 'MiEmpresa-5G',
-      frequency: '5GHz',
-      signal: -38,
-      clients: 8,
-      rxBytes: 2345678901,
-      txBytes: 1876543210,
-      status: 'up',
-    },
-    {
-      id: '3',
-      name: 'wlan3',
-      ssid: 'Invitados',
-      frequency: '2.4GHz',
-      signal: -52,
-      clients: 5,
-      rxBytes: 567890123,
-      txBytes: 345678901,
-      status: 'up',
-    },
-    {
-      id: '4',
-      name: 'wlan4',
-      ssid: 'BackupAP',
-      frequency: '5GHz',
-      signal: 0,
-      clients: 0,
-      rxBytes: 0,
-      txBytes: 0,
-      status: 'down',
-    },
-  ]);
+  const [selectedDevice, setSelectedDevice] = useState('');
+  const [wirelessInterfaces, setWirelessInterfaces] = useState<WirelessInterface[]>([]);
 
   // Lista de dispositivos obtenida desde la API
   const [devices] = useState<MikroTikDevice[]>([]);
@@ -184,9 +139,12 @@ const Wireless = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {wirelessInterfaces.map((iface) => (
-              <div
-                key={iface.id}
+            {wirelessInterfaces.length === 0 ? (
+              <p className="text-sm text-gray-500">No hay interfaces configuradas</p>
+            ) : (
+              wirelessInterfaces.map((iface) => (
+                <div
+                  key={iface.id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
               >
                 <div className="flex items-center space-x-4">
@@ -253,6 +211,7 @@ const Wireless = () => {
                 </div>
               </div>
             ))}
+            )}
           </div>
         </CardContent>
       </Card>

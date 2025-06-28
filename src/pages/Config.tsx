@@ -13,37 +13,57 @@ import { useGeneralConfig } from '@/hooks/useGeneralConfig';
 const Config = () => {
   const [generalConfig, setGeneralConfig] = useGeneralConfig();
 
-  const [databaseConfig, setDatabaseConfig] = useState({
-    host: 'localhost',
-    port: 3306,
-    database: 'mikrotik_dashboard',
-    username: 'admin',
-    password: '',
-    connectionTimeout: 10,
+  const [databaseConfig, setDatabaseConfig] = useState(() => {
+    const stored = localStorage.getItem('db-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          host: 'localhost',
+          port: 3306,
+          database: 'mikrotik_dashboard',
+          username: 'admin',
+          password: '',
+          connectionTimeout: 10,
+        };
   });
 
-  const [emailConfig, setEmailConfig] = useState({
-    smtpServer: 'smtp.gmail.com',
-    smtpPort: 587,
-    username: '',
-    password: '',
-    fromEmail: '',
-    useSSL: true,
+  const [emailConfig, setEmailConfig] = useState(() => {
+    const stored = localStorage.getItem('email-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          smtpServer: 'smtp.gmail.com',
+          smtpPort: 587,
+          username: '',
+          password: '',
+          fromEmail: '',
+          useSSL: true,
+        };
   });
 
-  const [securityConfig, setSecurityConfig] = useState({
-    sessionTimeout: 3600,
-    maxLoginAttempts: 5,
-    requireStrongPasswords: true,
-    enableTwoFactor: false,
+  const [securityConfig, setSecurityConfig] = useState(() => {
+    const stored = localStorage.getItem('security-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          sessionTimeout: 3600,
+          maxLoginAttempts: 5,
+          requireStrongPasswords: true,
+          enableTwoFactor: false,
+        };
   });
 
-  const [apiConfig, setApiConfig] = useState({
-    defaultHttpPort: 80,
-    defaultHttpsPort: 443,
-    connectionTimeout: 30,
-    retryAttempts: 3,
-    enableSSLVerification: true,
+  const [apiConfig, setApiConfig] = useState(() => {
+    const stored = localStorage.getItem('api-config');
+    return stored
+      ? JSON.parse(stored)
+      : {
+          defaultHttpPort: 80,
+          defaultHttpsPort: 443,
+          connectionTimeout: 30,
+          retryAttempts: 3,
+          enableSSLVerification: true,
+        };
   });
 
   const saveGeneralConfig = () => {
@@ -53,22 +73,22 @@ const Config = () => {
 
   const saveDatabaseConfig = () => {
     console.log('Guardando configuración de base de datos:', databaseConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('db-config', JSON.stringify(databaseConfig));
   };
 
   const saveEmailConfig = () => {
     console.log('Guardando configuración de email:', emailConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('email-config', JSON.stringify(emailConfig));
   };
 
   const saveSecurityConfig = () => {
     console.log('Guardando configuración de seguridad:', securityConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('security-config', JSON.stringify(securityConfig));
   };
 
   const saveApiConfig = () => {
     console.log('Guardando configuración de API:', apiConfig);
-    // Aquí se conectaría con la API para guardar
+    localStorage.setItem('api-config', JSON.stringify(apiConfig));
   };
 
   const testDatabaseConnection = () => {
