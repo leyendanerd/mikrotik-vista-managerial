@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 
 const Devices = () => {
   const [devices, setDevices] = useState<MikroTikDevice[]>([]);
-
   const formatUptime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const days = Math.floor(totalSeconds / 86400);
@@ -21,7 +20,6 @@ const Devices = () => {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     return `${days}d ${hours}h ${minutes}m`;
   };
-
   useEffect(() => {
     fetch('/api/devices')
       .then((r) => r.json())
@@ -56,7 +54,6 @@ const Devices = () => {
     }, 60000);
     return () => clearInterval(interval);
   }, []);
-
   const [newDevice, setNewDevice] = useState<Partial<MikroTikDevice>>({
     name: '',
     ip: '',
