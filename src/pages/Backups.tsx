@@ -11,35 +11,7 @@ import { DatabaseBackup, Download, Upload, Trash2, Calendar } from 'lucide-react
 import { BackupFile } from '@/types/mikrotik';
 
 const Backups = () => {
-  const [backups, setBackups] = useState<BackupFile[]>([
-    {
-      id: '1',
-      deviceId: 'dev1',
-      deviceName: 'Router Principal',
-      filename: 'router-principal-2024-01-15.backup',
-      size: 2048576,
-      created: new Date('2024-01-15T10:30:00'),
-      type: 'configuration',
-    },
-    {
-      id: '2',
-      deviceId: 'dev2',
-      deviceName: 'Access Point',
-      filename: 'access-point-2024-01-14.backup',
-      size: 1536000,
-      created: new Date('2024-01-14T15:45:00'),
-      type: 'full',
-    },
-    {
-      id: '3',
-      deviceId: 'dev1',
-      deviceName: 'Router Principal',
-      filename: 'router-principal-2024-01-10.backup',
-      size: 2097152,
-      created: new Date('2024-01-10T09:15:00'),
-      type: 'configuration',
-    },
-  ]);
+  const [backups, setBackups] = useState<BackupFile[]>([]);
 
   const [isCreatingBackup, setIsCreatingBackup] = useState(false);
   const [backupProgress, setBackupProgress] = useState(0);
@@ -70,7 +42,7 @@ const Backups = () => {
           const newBackup: BackupFile = {
             id: Date.now().toString(),
             deviceId: selectedDevice,
-            deviceName: selectedDevice === 'dev1' ? 'Router Principal' : 'Access Point',
+            deviceName: selectedDevice,
             filename: `backup-${Date.now()}.backup`,
             size: Math.floor(Math.random() * 3000000) + 1000000,
             created: new Date(),
@@ -126,8 +98,6 @@ const Backups = () => {
                   onChange={(e) => setSelectedDevice(e.target.value)}
                 >
                   <option value="">Seleccionar...</option>
-                  <option value="dev1">Router Principal</option>
-                  <option value="dev2">Access Point</option>
                 </select>
               </div>
 
