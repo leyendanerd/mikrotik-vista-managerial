@@ -159,7 +159,7 @@ const Traffic = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
+        ))
         )}
       </div>
     </div>
