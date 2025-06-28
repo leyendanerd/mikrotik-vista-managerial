@@ -210,7 +210,7 @@ const Wireless = () => {
                   </Button>
                 </div>
               </div>
-            ))}
+            ))
             )}
           </div>
         </CardContent>

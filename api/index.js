@@ -4,6 +4,7 @@ import mysql from 'mysql2/promise';
 import { RouterOSClient } from 'routeros-client';
 import { EventEmitter } from 'events';
 
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -21,6 +22,7 @@ const pool = mysql.createPool({
 
 // Keep RouterOS connections alive
 const connections = new Map();
+
 const emitter = new EventEmitter();
 
 function sendEvent(data) {
