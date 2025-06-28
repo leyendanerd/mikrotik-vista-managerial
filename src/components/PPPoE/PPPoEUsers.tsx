@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,17 @@ interface PPPoEUsersProps {
 const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
   const [users, setUsers] = useState<PPPoEUser[]>([]);
   const [profiles, setProfiles] = useState<PPPoEProfile[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(`pppoe-users-${deviceId}`);
+    if (stored) {
+      setUsers(JSON.parse(stored));
+    }
+  }, [deviceId]);
+
+  useEffect(() => {
+    localStorage.setItem(`pppoe-users-${deviceId}`, JSON.stringify(users));
+  }, [users, deviceId]);
 
   const [newUser, setNewUser] = useState<Partial<PPPoEUser>>({
     name: '',
@@ -203,6 +214,10 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
       title: "Perfil eliminado",
       description: "Perfil PPPoE eliminado exitosamente",
     });
+  };
+
+  const toggleDisabled = (userId: string, disabled: boolean) => {
+    setUsers(users.map(u => u.id === userId ? { ...u, disabled } : u));
   };
 
   return (
@@ -415,9 +430,15 @@ const PPPoEUsers: React.FC<PPPoEUsersProps> = ({ deviceId, deviceName }) => {
                         </TableCell>
                         <TableCell>{user.profile}</TableCell>
                         <TableCell>
-                          <Badge variant={user.isActive ? 'default' : user.disabled ? 'destructive' : 'secondary'}>
-                            {user.isActive ? 'Conectado' : user.disabled ? 'Deshabilitado' : 'Desconectado'}
-                          </Badge>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant={user.isActive ? 'default' : user.disabled ? 'destructive' : 'secondary'}>
+                              {user.isActive ? 'Conectado' : user.disabled ? 'Deshabilitado' : 'Desconectado'}
+                            </Badge>
+                            <Switch
+                              checked={!user.disabled}
+                              onCheckedChange={(checked) => toggleDisabled(user.id, !checked)}
+                            />
+                          </div>
                         </TableCell>
                         <TableCell>{user.ipAddress || '-'}</TableCell>
                         <TableCell>

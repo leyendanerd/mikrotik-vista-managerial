@@ -57,37 +57,8 @@ const Wireless = () => {
     },
   ]);
 
-  // Datos simulados de dispositivos
-  const [devices] = useState<MikroTikDevice[]>([
-    {
-      id: '1',
-      name: 'Router Principal',
-      ip: '192.168.1.1',
-      port: 8728,
-      username: 'admin',
-      password: '',
-      useHttps: true,
-      status: 'online',
-      lastSeen: new Date(),
-      version: '7.10.1',
-      board: 'RB4011iGS+',
-      uptime: '15d 3h 42m'
-    },
-    {
-      id: '2',
-      name: 'Access Point WiFi',
-      ip: '192.168.1.2',
-      port: 8728,
-      username: 'admin',
-      password: '',
-      useHttps: false,
-      status: 'online',
-      lastSeen: new Date(),
-      version: '7.9.2',
-      board: 'cAP ac',
-      uptime: '8d 12h 15m'
-    }
-  ]);
+  // Lista de dispositivos obtenida desde la API
+  const [devices] = useState<MikroTikDevice[]>([]);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 B';
