@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
 
+import { RouterOSClient } from 'routeros-client';
+
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -17,6 +20,9 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
+// Keep RouterOS connections alive
+const connections = new Map();
+
 app.get('/devices', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM mikrotik_devices');
@@ -29,6 +35,7 @@ app.get('/devices', async (req, res) => {
 
 app.post('/devices', async (req, res) => {
   const { name, ip, port, username, password, useHttps, status, lastSeen, version, board, uptime } = req.body;
+
 
   if (!name || !ip || !username || !password) {
     return res.status(400).json({ error: 'Missing fields' });
@@ -54,7 +61,6 @@ app.put('/devices/:id', async (req, res) => {
     await pool.execute(
       `UPDATE mikrotik_devices SET name=?, ip_address=?, port=?, username=?, password_encrypted=?, use_https=?, status=?, last_seen=?, version=?, board=?, uptime=? WHERE id=?`,
       [name, ip, port, username, password, !!useHttps, status, lastSeen, version, board, uptime, id]
-
     );
     const [rows] = await pool.query('SELECT * FROM mikrotik_devices WHERE id = ?', [id]);
     res.json(rows[0]);
@@ -75,6 +81,40 @@ app.delete('/devices/:id', async (req, res) => {
   }
 });
 
+
+app.post('/devices/:id/connect', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const [rows] = await pool.query('SELECT * FROM mikrotik_devices WHERE id=?', [id]);
+    if (!rows.length) return res.status(404).json({ error: 'Not found' });
+    const device = rows[0];
+    let client = connections.get(id);
+    if (!client) {
+      client = new RouterOSClient({
+        host: device.ip_address,
+        user: device.username,
+        password: device.password_encrypted,
+        port: device.port,
+        tls: !!device.use_https,
+        keepalive: true,
+      });
+      await client.connect();
+      connections.set(id, client);
+    }
+    const data = await client.menu('/system/resource').getOnly();
+    const version = data[0]['version'];
+    const board = data[0]['board-name'];
+    const lastSeen = new Date();
+    await pool.execute(
+      'UPDATE mikrotik_devices SET status=?, last_seen=?, version=?, board=? WHERE id=?',
+      ['online', lastSeen, version, board, id]
+    );
+    res.json({ status: 'online', version, board, lastSeen });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Connection failed' });
+  }
+});
 app.listen(port, () => {
   console.log(`API listening on port ${port}`);
 });

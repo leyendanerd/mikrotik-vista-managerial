@@ -88,6 +88,49 @@ const Devices = () => {
   }, []);
 
 
+  const formatUptime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    return `${days}d ${hours}h ${minutes}m`;
+  };
+
+  useEffect(() => {
+    fetch('/api/devices')
+      .then((r) => r.json())
+      .then((data) =>
+        setDevices(
+          data.map((d: any) => ({
+            id: d.id.toString(),
+            name: d.name,
+            ip: d.ip_address,
+            port: d.port,
+            username: d.username,
+            password: d.password_encrypted,
+            useHttps: !!d.use_https,
+            status: d.status || 'offline',
+            lastSeen: d.last_seen ? new Date(d.last_seen) : null,
+            version: d.version || 'Desconocido',
+            board: d.board || 'Desconocido',
+            uptime: d.last_seen ? formatUptime(Date.now() - new Date(d.last_seen).getTime()) : '0d 0h 0m',
+          }))
+        )
+      )
+      .catch((e) => console.error('Failed to load devices', e));
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDevices(devices => devices.map(d =>
+        d.status === 'online' && d.lastSeen
+          ? { ...d, uptime: formatUptime(Date.now() - d.lastSeen.getTime()) }
+          : d
+      ));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [newDevice, setNewDevice] = useState<Partial<MikroTikDevice>>({
     name: '',
     ip: '',
@@ -130,7 +173,8 @@ const Devices = () => {
     });
     if (res.ok) {
       const saved = await res.json();
-      setDevices([...devices, {
+
+      let added = {
         id: saved.id.toString(),
         name: saved.name,
         ip: saved.ip_address,
@@ -143,7 +187,22 @@ const Devices = () => {
         version: saved.version || 'Desconocido',
         board: saved.board || 'Desconocido',
         uptime: saved.uptime || '0d 0h 0m',
-      }]);
+
+      };
+      setDevices([...devices, added]);
+      await fetch(`/api/devices/${saved.id}/connect`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          setDevices(devs => devs.map(d => d.id === saved.id.toString() ? {
+            ...d,
+            status: data.status,
+            lastSeen: data.lastSeen ? new Date(data.lastSeen) : null,
+            version: data.version || d.version,
+            board: data.board || d.board,
+            uptime: '0d 0h 0m'
+          } : d));
+        })
+        .catch(() => {});
     }
     setNewDevice({
       name: '',
@@ -237,31 +296,18 @@ const Devices = () => {
       description: `Conectando con ${device.name}...`,
     });
 
-    // Simulamos una prueba de conexión
-    setTimeout(async () => {
-      const success = Math.random() > 0.3;
-
-      if (success) {
-        const lastSeen = new Date();
-        const updated = { ...device, status: 'online' as const, lastSeen };
-        setDevices(devices.map(d => d.id === device.id ? { ...updated, uptime: formatUptime(0) } : d));
-        await fetch(`/api/devices/${device.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: device.name,
-            ip: device.ip,
-            port: device.port,
-            username: device.username,
-            password: device.password,
-            useHttps: device.useHttps,
-            status: 'online',
-            lastSeen: lastSeen.toISOString(),
-            version: device.version,
-            board: device.board,
-            uptime: '0d 0h 0m'
-          })
-        });
+    try {
+      const resp = await fetch(`/api/devices/${device.id}/connect`, { method: 'POST' });
+      if (resp.ok) {
+        const data = await resp.json();
+        setDevices(devs => devs.map(d => d.id === device.id ? {
+          ...d,
+          status: data.status,
+          lastSeen: data.lastSeen ? new Date(data.lastSeen) : null,
+          version: data.version || d.version,
+          board: data.board || d.board,
+          uptime: '0d 0h 0m'
+        } : d));
         toast({
           title: "Conexión exitosa",
           description: `Conectado con ${device.name}`,
@@ -273,7 +319,13 @@ const Devices = () => {
           variant: "destructive",
         });
       }
-    }, 2000);
+    } catch (err) {
+      toast({
+        title: "Error de conexión",
+        description: `No se pudo conectar con ${device.name}`,
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
