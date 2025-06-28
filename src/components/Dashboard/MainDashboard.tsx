@@ -10,75 +10,9 @@ export const MainDashboard: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
 
   useEffect(() => {
-    // Datos de ejemplo - En producción esto vendría de la API
-    const mockDevices: MikroTikDevice[] = [
-      {
-        id: '1',
-        name: 'Router Principal',
-        ip: '192.168.1.1',
-        port: 8728,
-        username: 'admin',
-        password: '',
-        useHttps: true,
-        status: 'online',
-        lastSeen: new Date(),
-        version: '7.10.1',
-        board: 'RB4011iGS+',
-        uptime: '15d 3h 42m'
-      },
-      {
-        id: '2',
-        name: 'Access Point WiFi',
-        ip: '192.168.1.2',
-        port: 8728,
-        username: 'admin',
-        password: '',
-        useHttps: false,
-        status: 'online',
-        lastSeen: new Date(),
-        version: '7.9.2',
-        board: 'cAP ac',
-        uptime: '7d 12h 15m'
-      },
-      {
-        id: '3',
-        name: 'Router Sucursal',
-        ip: '192.168.2.1',
-        port: 8728,
-        username: 'admin',
-        password: '',
-        useHttps: true,
-        status: 'warning',
-        lastSeen: new Date(Date.now() - 300000),
-        version: '7.8.5',
-        board: 'hEX S',
-        uptime: '2d 8h 30m'
-      }
-    ];
-
-    const mockAlerts: Alert[] = [
-      {
-        id: '1',
-        deviceId: '3',
-        deviceName: 'Router Sucursal',
-        type: 'warning',
-        message: 'Alto uso de CPU (85%)',
-        timestamp: new Date(Date.now() - 60000),
-        acknowledged: false
-      },
-      {
-        id: '2',
-        deviceId: '1',
-        deviceName: 'Router Principal',
-        type: 'info',
-        message: 'Backup completado exitosamente',
-        timestamp: new Date(Date.now() - 3600000),
-        acknowledged: true
-      }
-    ];
-
-    setDevices(mockDevices);
-    setAlerts(mockAlerts);
+    // Cargar datos desde la API
+    setDevices([]);
+    setAlerts([]);
   }, []);
 
   const getStatusColor = (status: string) => {
