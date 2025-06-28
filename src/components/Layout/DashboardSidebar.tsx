@@ -49,12 +49,12 @@ export const DashboardSidebar: React.FC = () => {
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive ? 'bg-blue-100 text-blue-800 font-medium' : 'hover:bg-gray-100 text-gray-700';
+    isActive ? 'bg-blue-100 text-blue-800 font-medium dark:bg-blue-800/20 dark:text-blue-100' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200';
 
   return (
     <Sidebar className={isCollapsed ? 'w-14' : 'w-64'} collapsible="icon">
-      <SidebarContent className="bg-white border-r border-gray-200">
-        <div className="p-4 border-b border-gray-200">
+      <SidebarContent className="bg-[hsl(var(--sidebar-background))] text-[hsl(var(--sidebar-foreground))] border-r border-[hsl(var(--sidebar-border))]">
+        <div className="p-4 border-b border-[hsl(var(--sidebar-border))]">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
               {React.createElement(Icons[generalConfig.loginIcon as keyof typeof Icons] ?? Monitor, {
@@ -63,15 +63,15 @@ export const DashboardSidebar: React.FC = () => {
             </div>
             {!isCollapsed && (
               <div>
-                <h2 className="font-bold text-gray-900">{generalConfig.appName}</h2>
-                <p className="text-xs text-gray-500">Admin Panel</p>
+                <h2 className="font-bold">{generalConfig.appName}</h2>
+                <p className="text-xs text-muted-foreground">Admin Panel</p>
               </div>
             )}
           </div>
         </div>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-500 uppercase text-xs font-semibold px-4 py-2">
+          <SidebarGroupLabel className="text-muted-foreground uppercase text-xs font-semibold px-4 py-2">
             {!isCollapsed && 'Navegación'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -94,7 +94,7 @@ export const DashboardSidebar: React.FC = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <div className="mt-auto p-4 border-t border-gray-200">
+        <div className="mt-auto p-4 border-t border-[hsl(var(--sidebar-border))]">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-gray-600" />

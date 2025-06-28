@@ -14,17 +14,17 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, onLo
   const [generalConfig] = useGeneralConfig();
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-gray-50">
+      <div className="min-h-screen flex w-full bg-background text-foreground">
         <DashboardSidebar />
         <main className="flex-1 overflow-auto">
-          <header className="bg-white border-b border-gray-200 px-6 py-4">
+          <header className="bg-card border-b border-border px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <SidebarTrigger />
-                <h1 className="text-2xl font-bold text-gray-900">{generalConfig.appName}</h1>
+                <h1 className="text-2xl font-bold">{generalConfig.appName}</h1>
               </div>
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-muted-foreground">
                   {new Date().toLocaleString()}
                 </div>
                 {onLogout && (

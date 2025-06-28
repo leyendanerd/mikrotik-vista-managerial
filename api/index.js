@@ -97,7 +97,6 @@ app.post('/devices/:id/connect', async (req, res) => {
       connections.set(id, client);
     } else if (!client.isConnected) {
       await client.connect();
-
     }
     const data = await client.menu('/system/resource').getOnly();
     const version = data[0]['version'];

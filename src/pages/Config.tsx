@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Settings, Database, Mail, Shield, Globe } from 'lucide-react';
 import { useGeneralConfig } from '@/hooks/useGeneralConfig';
+import { useToast } from '@/hooks/use-toast';
 
 const Config = () => {
   const [generalConfig, setGeneralConfig] = useGeneralConfig();
+  const { toast } = useToast();
 
   const [databaseConfig, setDatabaseConfig] = useState(() => {
     const stored = localStorage.getItem('db-config');
@@ -67,28 +69,31 @@ const Config = () => {
   });
 
   const saveGeneralConfig = () => {
-    console.log('Guardando configuración general:', generalConfig);
     localStorage.setItem('general-config', JSON.stringify(generalConfig));
+    toast({
+      title: 'Configuración guardada',
+      description: 'Ajustes generales almacenados',
+    });
   };
 
   const saveDatabaseConfig = () => {
-    console.log('Guardando configuración de base de datos:', databaseConfig);
     localStorage.setItem('db-config', JSON.stringify(databaseConfig));
+    toast({ title: 'Base de datos guardada' });
   };
 
   const saveEmailConfig = () => {
-    console.log('Guardando configuración de email:', emailConfig);
     localStorage.setItem('email-config', JSON.stringify(emailConfig));
+    toast({ title: 'Configuración de email guardada' });
   };
 
   const saveSecurityConfig = () => {
-    console.log('Guardando configuración de seguridad:', securityConfig);
     localStorage.setItem('security-config', JSON.stringify(securityConfig));
+    toast({ title: 'Seguridad guardada' });
   };
 
   const saveApiConfig = () => {
-    console.log('Guardando configuración de API:', apiConfig);
     localStorage.setItem('api-config', JSON.stringify(apiConfig));
+    toast({ title: 'API guardada' });
   };
 
   const testDatabaseConnection = () => {
@@ -104,7 +109,7 @@ const Config = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Configuración del Sistema</h1>
+        <h1 className="text-3xl font-bold">Configuración del Sistema</h1>
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
