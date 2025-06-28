@@ -4,7 +4,6 @@ import mysql from 'mysql2/promise';
 
 import { RouterOSClient } from 'routeros-client';
 
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -35,7 +34,6 @@ app.get('/devices', async (req, res) => {
 
 app.post('/devices', async (req, res) => {
   const { name, ip, port, username, password, useHttps, status, lastSeen, version, board, uptime } = req.body;
-
 
   if (!name || !ip || !username || !password) {
     return res.status(400).json({ error: 'Missing fields' });
@@ -81,7 +79,6 @@ app.delete('/devices/:id', async (req, res) => {
   }
 });
 
-
 app.post('/devices/:id/connect', async (req, res) => {
   const id = req.params.id;
   try {
@@ -115,6 +112,7 @@ app.post('/devices/:id/connect', async (req, res) => {
     res.status(500).json({ error: 'Connection failed' });
   }
 });
+
 app.listen(port, () => {
   console.log(`API listening on port ${port}`);
 });
