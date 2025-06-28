@@ -60,6 +60,12 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## API server
+
+The `api` folder contains a small Express server used to persist
+device information in the MariaDB database. The React frontend
+communicates with this API to load and save devices.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/18b30a26-58c8-4510-9eac-aeca1440f0ba) and click on Share -> Publish.
