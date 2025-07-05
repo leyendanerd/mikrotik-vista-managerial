@@ -4,7 +4,6 @@ import mysql from 'mysql2/promise';
 import { RouterOSClient } from 'routeros-client';
 import { EventEmitter } from 'events';
 
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -22,7 +21,6 @@ const pool = mysql.createPool({
 
 // Keep RouterOS connections alive
 const connections = new Map();
-
 const emitter = new EventEmitter();
 
 function sendEvent(data) {
@@ -161,14 +159,14 @@ app.post('/devices/:id/connect', async (req, res) => {
     sendEvent({
       type: 'alert',
       deviceId: id,
-      deviceName: id,
+      deviceName: device.name,
       message: 'Error de conexión',
       level: 'error',
       timestamp: new Date(),
     });
     sendEvent({
       type: 'log',
-      message: `Error al conectar con ${id}`,
+      message: `Error al conectar con ${device.name}`,
       level: 'error',
       timestamp: new Date(),
     });

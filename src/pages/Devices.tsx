@@ -324,6 +324,57 @@ const Devices = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    fetch('/api/devices')
+      .then((r) => r.json())
+      .then((data) => {
+        const loaded = data.map((d: any) => ({
+            id: d.id.toString(),
+            name: d.name,
+            ip: d.ip_address,
+            port: d.port,
+            username: d.username,
+            password: d.password_encrypted,
+            useHttps: !!d.use_https,
+            status: d.status || 'offline',
+            lastSeen: d.last_seen ? new Date(d.last_seen) : null,
+            version: d.version || 'Desconocido',
+            board: d.board || 'Desconocido',
+            uptime: d.last_seen ? formatUptime(Date.now() - new Date(d.last_seen).getTime()) : '0d 0h 0m',
+        }));
+        setDevices(loaded);
+        loaded.forEach((dev) => {
+          fetch(`/api/devices/${dev.id}/connect`, { method: 'POST' })
+            .then(r => r.ok ? r.json() : null)
+            .then(conn => {
+              if (conn) {
+                setDevices(ds => ds.map(d => d.id === dev.id ? {
+                  ...d,
+                  status: conn.status,
+                  lastSeen: conn.lastSeen ? new Date(conn.lastSeen) : null,
+                  version: conn.version || d.version,
+                  board: conn.board || d.board,
+                  uptime: '0d 0h 0m'
+                } : d));
+              }
+            })
+            .catch(() => {});
+        });
+      })
+      .catch((e) => console.error('Failed to load devices', e));
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDevices(devices => devices.map(d =>
+        d.status === 'online' && d.lastSeen
+          ? { ...d, uptime: formatUptime(Date.now() - d.lastSeen.getTime()) }
+          : d
+      ));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [newDevice, setNewDevice] = useState<Partial<MikroTikDevice>>({
     name: '',
     ip: '',
