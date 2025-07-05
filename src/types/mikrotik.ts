@@ -144,3 +144,10 @@ export interface AlertConfig {
   sendSMS: boolean;
   devices: string[];
 }
+
+export interface LogEntry {
+  id: string;
+  message: string;
+  level: 'info' | 'error';
+  timestamp: Date;
+}

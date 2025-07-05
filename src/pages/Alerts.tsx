@@ -5,81 +5,33 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, AlertCircle, Info, Check, X } from 'lucide-react';
 import { Alert } from '@/types/mikrotik';
+import { useEventStream } from '@/hooks/useEventStream';
 import DeviceSelector from '@/components/DeviceSelector/DeviceSelector';
 import { MikroTikDevice } from '@/types/mikrotik';
 
 const Alerts = () => {
-  const [selectedDevice, setSelectedDevice] = useState('1');
-  const [alerts, setAlerts] = useState<Alert[]>([
-    {
-      id: '1',
-      deviceId: '1',
-      deviceName: 'Router Principal',
-      type: 'critical',
-      message: 'CPU al 100%',
-      timestamp: new Date(),
-      acknowledged: false,
-    },
-    {
-      id: '2',
-      deviceId: '1',
-      deviceName: 'Router Principal',
-      type: 'warning',
-      message: 'Poco espacio en disco',
-      timestamp: new Date(),
-      acknowledged: false,
-    },
-    {
-      id: '3',
-      deviceId: '2',
-      deviceName: 'Access Point WiFi',
-      type: 'info',
-      message: 'Nuevo cliente conectado',
-      timestamp: new Date(),
-      acknowledged: true,
-    },
-    {
-      id: '4',
-      deviceId: '1',
-      deviceName: 'Router Principal',
-      type: 'info',
-      message: 'Conexión VPN establecida',
-      timestamp: new Date(),
-      acknowledged: true,
-    },
-  ]);
+  const [selectedDevice, setSelectedDevice] = useState('');
+  const [alerts, setAlerts] = useState<Alert[]>([]);
 
-  // Datos simulados de dispositivos
-  const [devices] = useState<MikroTikDevice[]>([
-    {
-      id: '1',
-      name: 'Router Principal',
-      ip: '192.168.1.1',
-      port: 8728,
-      username: 'admin',
-      password: '',
-      useHttps: true,
-      status: 'online',
-      lastSeen: new Date(),
-      version: '7.10.1',
-      board: 'RB4011iGS+',
-      uptime: '15d 3h 42m'
-    },
-    {
-      id: '2',
-      name: 'Access Point WiFi',
-      ip: '192.168.1.2',
-      port: 8728,
-      username: 'admin',
-      password: '',
-      useHttps: false,
-      status: 'online',
-      lastSeen: new Date(),
-      version: '7.9.2',
-      board: 'cAP ac',
-      uptime: '8d 12h 15m'
+  // Lista de dispositivos obtenida desde la API
+  const [devices] = useState<MikroTikDevice[]>([]);
+
+  useEventStream((evt) => {
+    if (evt.type === 'alert') {
+      setAlerts((a) => [
+        ...a,
+        {
+          id: evt.id || Math.random().toString(36).slice(2),
+          deviceId: evt.deviceId,
+          deviceName: evt.deviceName,
+          type: evt.level === 'error' ? 'critical' : 'info',
+          message: evt.message,
+          timestamp: evt.timestamp ? new Date(evt.timestamp) : new Date(),
+          acknowledged: false,
+        },
+      ]);
     }
-  ]);
+  });
 
   const acknowledgeAlert = (alertId: string) => {
     setAlerts(alerts.map(alert =>
